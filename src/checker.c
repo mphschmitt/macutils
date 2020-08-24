@@ -53,6 +53,9 @@ bool chars_are_equivalent(char c1, char c2)
 
 	delta = 'a' - 'A';
 
+	if (c1 == c2)
+		return true;
+
 	if (isdigit(c1) && isdigit(c2))
 		return c1 == c2;
 
