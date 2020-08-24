@@ -23,10 +23,11 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#define OUI "oui.txt"
-#define OUI_PATH "./"
+#include "checker.h"
+#include "manufacturer.h"
 
-#define MAC_LENGTH 17
+#define OUI "oui.txt"
+#define OUI_PATH "/usr/local/share/maclookup/"
 
 enum arguments {
 	ARGS_U = 0X01 /* Update the database of manufacturers */
@@ -51,69 +52,6 @@ static void version(void)
 	"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
 	"This is free software, and you are welcome to change and redistribute it\n"
 	"This program comes with ABSOLUTELY NO WARRANTY.\n");
-}
-
-static bool is_hexa(char c)
-{
-	int i;
-	char xdigit[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		'a', 'b', 'c', 'd', 'e', 'f',
-		'A', 'B', 'C', 'D', 'E', 'F'};
-
-	for (i = 0; i < 22; ++i)
-		if (c == xdigit[i])
-			return true;
-
-	return false;
-}
-
-static bool is_separator(char c)
-{
-	static char previous_separator = '\0';
-	char separators[] = {':', '-', ' '};
-	int i;
-
-	for (i = 0; i < 3; ++i) {
-		if (c == separators[i]) {
-			if (previous_separator != '\0' && c != previous_separator) {
-				printf("Inconsistent use of '%c' and '%c' as a separator\n", c,
-					previous_separator);
-				return false;
-			}
-			previous_separator = c;
-			break;
-		}
-	}
-
-	return !(i >= 3);
-}
-
-static int mac_address_is_valid(char * mac)
-{
-	size_t length, i;
-	int counter = 0;
-	bool res = true;
-
-	length = strlen(mac);
-	if (length != MAC_LENGTH)
-		return res;
-
-	for (i = 0; i < length; ++i) {
-		if (counter == 2) {
-			counter = 0;
-			if (!is_separator(mac[i])) {
-				res = false;
-				break;
-			}
-		} else if (is_hexa(mac[i])) {
-			counter += 1;
-		} else {
-			res = false;
-			break;
-		}
-	}
-
-	return res;
 }
 
 static char check_arguments(int argc, char *argv[], char ** mac_address)
@@ -146,10 +84,9 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 
 	if (optind + 1 == argc) {
 		if (!mac_address_is_valid(argv[1])) {
-		printf("Invalid mac address: %s\n", argv[1]);
+			printf("Invalid mac address: %s\n", argv[1]);
 			return -EINVAL;
 		}
-		printf("Valid mac address: %s\n", argv[1]);
 		*mac_address = strndup(argv[1], strlen(argv[1]));
 	} else if (optind < argc) {
 		printf("Invalid argument: %s\n", argv[1]);
@@ -168,13 +105,9 @@ static void update(void)
 {
 }
 
-static void find_manufacturer(void)
-{
-}
-
 int main(int argc, char *argv[])
 {
-	char *mac_address;
+	char *mac_address = NULL;
 	char args = 0;
 	int res = 0;
 
@@ -184,10 +117,15 @@ int main(int argc, char *argv[])
 		goto end;
 	}
 
+	if (!mac_address) {
+		res = -EINVAL;
+		goto end;
+	}
+
 	if (args & ARGS_U)
 		update();
 	else
-		find_manufacturer();
+		find_manufacturer(mac_address, OUI_PATH OUI);
 
 end:
 	return res;

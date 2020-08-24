@@ -29,8 +29,14 @@ OPTIMIZATION_FLAGS := -O3
 FLAGS := ${MATH_FLAGS} ${ERROR_FLAGS} ${FORMAT_FLAGS} ${OPTIMIZATION_FLAGS}
 
 OUTPUT_DIR := out
+
 PROG_NAME := maclookup
-SRC := main.c
+SRC := main.c \
+	checker.c \
+	manufacturer.c
+SOURCES := $(addprefix src/, ${SRC})
+
+INCLUDES := includes
 
 MAN_DIR := man
 MAN := ${PROG_NAME}.1
@@ -38,16 +44,18 @@ INSTALL_DIR := /usr/local/bin
 INSTALL_MAN_DIR := /usr/local/share/man/man1
 INSTALL_MAN_DIR_FR := /usr/local/share/man/fr/man1
 
+DATABASE_DIR := /usr/local/share/${PROG_NAME}
+
 .PHONY: all
 all: maclookup
 
 .PHONY: maclookup
-maclookup: ${SRC}
+maclookup: ${SOURCES}
 	@mkdir -p ${OUTPUT_DIR}
-	@${COMPILER} main.c ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
+	${COMPILER} ${SOURCES} -I${INCLUDES} ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
 
 .PHONY: install
-install: ${OUTPUT_DIR}/${PROG_NAME} install_man
+install: ${OUTPUT_DIR}/${PROG_NAME} install_man download_data
 	@mkdir -p ${DESTDIR}${INSTALL_DIR}
 	@cp $< ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
 
@@ -67,6 +75,11 @@ install_man:
 uninstall_man:
 	rm ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
 	rm ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
+
+.PHONY: download_data
+download_data:
+	@mkdir -p ${DATABASE_DIR}
+	@bash -c 'curl --connect-timeout 10 http://standards-oui.ieee.org/oui.txt > ${DATABASE_DIR}/oui.txt'
 
 .PHONY: clean
 clean:
