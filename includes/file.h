@@ -16,16 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _MANUFACTURER_H_
-#define _MANUFACTURER_H_
+#ifndef _FILE_H_
+#define _FILE_H_
 
-/**
- * @brief Find the manufacturer in the file passed as an argument
- *
- * @param mac The mac address to check
- * @param filename The name of the file to use 
- */
-int find_manufacturer(char * mac, char const *filename);
+int update(const char *path, const char *file);
 
-#endif /* _MANUFACTURER_H_ */
-
+#endif /* _FILE_H_ */

@@ -23,6 +23,7 @@
 #include <ctype.h>
 
 #include "checker.h"
+#include "manufacturer.h"
 
 #define MANUFACTURER_DIGITS 8
 
@@ -111,7 +112,7 @@ static int find_mac_address(FILE *oui, char *mac)
 	return 0;
 }
 
-int find_manufacturer(char *mac, char const * filename)
+int find_manufacturer(char * mac, char const * filename)
 {
 	FILE *oui;
 	int ret;

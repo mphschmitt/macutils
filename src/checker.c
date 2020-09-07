@@ -17,12 +17,15 @@
 */
 
 #define MAC_LENGTH 17
+#define MAC_PREFIX_LENGTH 8
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+
+#include "checker.h"
 
 static bool is_separator(char c)
 {
@@ -73,7 +76,7 @@ bool mac_address_is_valid(char * mac)
 	bool res = true;
 
 	length = strlen(mac);
-	if (length != MAC_LENGTH)
+	if (length != MAC_LENGTH && length != MAC_PREFIX_LENGTH)
 		return false;
 
 	for (i = 0; i < length; ++i) {

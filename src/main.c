@@ -25,6 +25,7 @@
 
 #include "checker.h"
 #include "manufacturer.h"
+#include "file.h"
 
 #define OUI "oui.txt"
 #define OUI_PATH "/usr/local/share/maclookup/"
@@ -92,17 +93,13 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 		printf("Invalid argument: %s\n", argv[1]);
 		usage();
 		return -EINVAL;
-	} else if (optind == argc) {
+	} else if (optind == argc && !(args & ARGS_U)) {
 		printf("Missing argument: mac address\n");
 		usage();
 		return -EINVAL;
 	}
 
 	return args;
-}
-
-static void update(void)
-{
 }
 
 int main(int argc, char *argv[])
@@ -117,15 +114,15 @@ int main(int argc, char *argv[])
 		goto end;
 	}
 
-	if (!mac_address) {
+	if (args & ARGS_U) {
+		update(OUI_PATH, OUI);
+		goto end;
+	} else if (!mac_address) {
 		res = -EINVAL;
 		goto end;
 	}
 
-	if (args & ARGS_U)
-		update();
-	else
-		find_manufacturer(mac_address, OUI_PATH OUI);
+	find_manufacturer(mac_address, OUI_PATH OUI);
 
 end:
 	return res;
