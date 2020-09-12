@@ -29,9 +29,15 @@
 
 #define MANUFACTURER_DIGITS 8
 
+extern char * libreadoui_line;
+extern size_t buff_size;
+
 static int compare_mac_addresses(char *mac1, char *mac2)
 {
-	int i = 0;
+	int i;
+
+	if (!mac1 || !mac2)
+		return -EINVAL;
 
 	for (i = 0; i < MANUFACTURER_DIGITS; ++i) {
 		if (!isxdigit(mac1[i]))
@@ -46,58 +52,37 @@ static int compare_mac_addresses(char *mac1, char *mac2)
 
 static int find_mac_address(FILE *oui, char *mac)
 {
-	ssize_t read;
-	size_t buff_size;
-	char *line = NULL;
-	bool is_first_line = true;
-	bool last_entry = false;
+	int ret;
 
-	while ((read = getline(&line, &buff_size, oui))) {
-		if (read == -1) {
-			if (errno) {
-				libreadoui_print_error();
-				return -errno;
-			}
-			return 0;
-		}
+	ret = 0;
 
-		if (line && line[0] == '\r' && line[1] == '\n') {
-			if (last_entry)
-				break;
-			is_first_line = true;
-			continue;
-		}
+	/* Check first manufacturer, after the skippin headers */
+	if (compare_mac_addresses(libreadoui_line, mac)) {
+		libreadoui_print_manufacturer(oui);
+		return 0;
+	}
 
-		if (is_first_line) {
-			is_first_line = false;
+	/* Check all the other manufacturers */
+	while (true) {
+		ret = libreadoui_get_next_manufacturer(oui);
+		if (ret)
+			break;
 
-			if (compare_mac_addresses(line, mac))
-				last_entry = true;
-		}
-
-		/* If the manufacturer has been found, display its informations then
-		 * break */
-		if (last_entry)
-			printf("%s", line);
-
-		if (line) {
-			free(line);
-			line = NULL;
+		if (compare_mac_addresses(libreadoui_line, mac)) {
+			libreadoui_print_manufacturer(oui);
+			break;
 		}
 	}
 
-	if (line) {
-		free(line);
-		line = NULL;
-	}
-
-	return 0;
+	return ret;
 }
 
 int find_manufacturer(char * mac, char const * filename)
 {
 	FILE *oui;
 	int ret;
+
+	libreadoui_line = NULL;
 
 	oui = fopen(filename, "r");
 	if (!oui) {
@@ -114,6 +99,8 @@ int find_manufacturer(char * mac, char const * filename)
 		goto end;
 
 end:
+	libreadoui_line_free();
+
 	ret = fclose(oui);
 	if (ret) {
 		printf("%s\n", strerror(errno));

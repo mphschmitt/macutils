@@ -20,6 +20,19 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
+#include "libreadoui.h"
+
+char * libreadoui_line = NULL;
+size_t libreadoui_buff_size = 0;
+
+void libreadoui_line_free(void)
+{
+	if (libreadoui_line)
+		free(libreadoui_line);
+	libreadoui_line = NULL;
+}
 
 void libreadoui_print_error(void)
 {
@@ -30,21 +43,15 @@ void libreadoui_print_error(void)
 		strerror(errno));
 }
 
-/**
- * @brief Skip the first lines from the file.
- *
- * These lines are a header that describes the format of the file.
- * They are of no use to maclookup.
- *
- * @param oui The file to read
- */
-int libreadoui_skip_header(FILE *oui)
+int libreadoui_skip_header(FILE *ptr)
 {
 	ssize_t read;
-	size_t buff_size;
-	char *line = NULL;
 
-	while ((read = getline(&line, &buff_size, oui))) {
+	if (!ptr)
+		return -EINVAL;
+
+	while (1) {
+		read = getline(&libreadoui_line, &libreadoui_buff_size, ptr);
 		if (read == -1) {
 			if (errno) {
 				libreadoui_print_error();
@@ -53,18 +60,84 @@ int libreadoui_skip_header(FILE *oui)
 			break;
 		}
 
-		if (line && line[0] == '\r' && line[1] == '\n')
+		if (libreadoui_line && libreadoui_line[0] == '\r' &&
+				libreadoui_line[1] == '\n')
 			break;
 
-		if (line) {
-			free(line);
-			line = NULL;
+	}
+
+	/* Read last empty line to position file pointer on first line of
+	 * next manufacturer entry */
+	read = getline(&libreadoui_line, &libreadoui_buff_size, ptr);
+	if (read == -1) {
+		if (errno) {
+			libreadoui_print_error();
+			return -errno;
 		}
 	}
 
-	if (line) {
-		free(line);
-		line = NULL;
+	return 0;
+}
+
+int libreadoui_print_manufacturer(FILE *ptr)
+{
+	if (!ptr)
+		return -EINVAL;
+
+	printf("%s", libreadoui_line);
+	while (true) {
+		ssize_t read;
+
+		read = getline(&libreadoui_line, &libreadoui_buff_size, ptr);
+		if (read == -1) {
+			if (errno) {
+				libreadoui_print_error();
+				return -errno;
+			}
+			break;
+		}
+
+		if (libreadoui_line && libreadoui_line[0] == '\r' &&
+				libreadoui_line[1] == '\n') {
+			break;
+		}
+
+		printf("%s", libreadoui_line);
+
+	}
+
+	return 0;
+}
+
+int libreadoui_get_next_manufacturer(FILE *ptr)
+{
+	bool is_first_line;
+
+	errno = 0;
+	is_first_line = false;
+
+	if (!ptr)
+		return -EINVAL;
+
+	while (1) {
+		ssize_t read;
+
+		read = getline(&libreadoui_line, &libreadoui_buff_size, ptr);
+		if (read == -1) {
+			if (errno) {
+				libreadoui_print_error();
+				return -errno;
+			}
+			break;
+		}
+
+		if (is_first_line)
+			break;
+
+		if (libreadoui_line && libreadoui_line[0] == '\r' &&
+				libreadoui_line[1] == '\n') {
+			is_first_line = true;
+		}
 	}
 
 	return 0;

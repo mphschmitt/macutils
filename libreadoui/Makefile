@@ -37,7 +37,7 @@ LIB_NAME := libreadoui.a
 .PHONY: all
 all: libreadoui
 
-${OBJS}:
+${OBJS}: ${SRC}
 	@mkdir -p ${OUTPUT_DIR}
 	@${COMPILER} ${SRC} ${FLAGS} -c -o $@
 

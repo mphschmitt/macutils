@@ -90,7 +90,7 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 			printf("Invalid mac address: %s\n", argv[1]);
 			return -EINVAL;
 		}
-		*mac_address = strndup(argv[1], strlen(argv[1]));
+		*mac_address = strndup(argv[1], strlen(argv[1]) - 1);
 	} else if (optind < argc) {
 		printf("Invalid argument: %s\n", argv[1]);
 		usage();

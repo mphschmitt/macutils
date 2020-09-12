@@ -19,8 +19,48 @@
 #ifndef _LIBREADOUI_H_
 #define _LIBREADOUI_H_
 
+/*
+ * libreaoui Reads a oui.txt file.
+ *
+ * It offers 2 global varibales: libreadoui_line and libreadoui_buff_size.
+ * Both are necessary to read the file, and are completly handled by the 
+ * library. The user should not be concerned with these values, and should
+ * not modify them.
+ *
+ * libreaoui_line is a pointer to the current line in the file.
+ *
+ * libreadoui_buff_size is a pointer to the current size of the buffer
+ * containing the line.
+ * libreadoui uses getline. Since getline may realloc the memory for each
+ * new line, it is thus necessary to store the current size of the buffer to
+ * avoid leaks.
+ *
+ * When done reading the file, the user should free the memoy by calling
+ * libreadoui_line_free.
+ *
+ */
+
+/**
+ * @brief Skip the first lines from the file.
+ *
+ * These lines are a header that describes the format of the file.
+ * They are of no use to maclookup.
+ */
+int libreadoui_skip_header(FILE *ptr);
+
+/**
+ * @brief Move the file pointer to the start of the next manufacturer
+ */
+int libreadoui_get_next_manufacturer(FILE *ptr);
+
+/**
+ * @brief Print the manufacturer's informations.
+ */
+int libreadoui_print_manufacturer(FILE *ptr);
+
 void libreadoui_print_error(void);
-int libreadoui_skip_header(FILE *oui);
+
+void libreadoui_line_free(void);
 
 #endif /* _LIBREADOUI_H_ */
 
