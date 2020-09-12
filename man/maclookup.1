@@ -1,0 +1,99 @@
+.TH maclookup 1  "September 12, 2020" "version 1.0" "USER COMMANDS"
+.SH NAME
+maclookup \- Query IEE's oui database
+.SH SYNOPSIS
+.B maclookup
+[\-huv] mac-address | manufacturer
+.SH DESCRIPTION
+.B maclookup
+reads a mac address passed as an argument, and find its manufacturer in the iee's oui.txt database.
+It can also do a reverse search, retrieving all possible three digits mac prefix for a manufacturer.
+.PP
+It is designed for a quick search in the terminal, instead of using internet based tools.
+It is also possible to read the mac address (or the manufacturer name) from the stdin for use in a datapipe (see
+.B EXAMPLES\fR)
+by using the
+.B -S
+option.
+.PP
+The result of a query is the raw data from the oui.txt:
+.PP
+OUI/MA-L        Organization
+.br
+company_id      Organization
+.br
+                Address
+.PP
+The first line contains the three digits mac address prefix of the organization, and the organization name.
+.br
+The second line also contains the three digits mac address prefix of the organization, and the organization name.
+.br
+Finally, the third line is the address of the organization.
+.PP
+The full oui.txt file is stored locally on the host. Thus, it is not necessary to have an internet connection to query the iee's manufacturers database.
+.br
+However, an internet connection is required for updates of the database and during installation. If the database is not fully fetched during installation because of a faulty internet connection, it is possible to retry later using the
+.B --update
+option.
+.PP
+.B maclookup
+stays up to date by downloading the iee's latest database and storing it in
+.B /usr/local/share/maclookup\fR.
+The update is not automatic, and must be performed at the user's request by using the
+.B -u
+option (see
+.B EXAMPLES\fR).
+Before updating the database, a backup is created. If the update fails or is stopped (by sending a signal for example), then the backup is restored and will be used in subsequent use of 
+.B maclookup\fR.
+.PP
+.SH OPTIONS
+.TP
+.B \-h, --help
+display this help message and exit
+.TP
+.B \-v, --version
+output version information and exit
+.TP
+.B \-u, --update
+update the oui.txt database
+.SH EXAMPLES
+All the below mac addresses are randomly generated, with a valid company id (first three digits).
+.TP
+Find the manufacturer of a mac address
+.B maclookup
+08:61:95:02:ff:f2
+.PP
+.TP
+Find the manufacturer of a mac address using only manufacturer digits
+.B maclookup
+08-61-95
+.PP
+.TP
+Read a mac address on the standard input, and find its manufacturer
+echo '08:61:95:02:2b:4c' | 
+.B chktropy
+\-S
+.PP
+.TP
+Read a mac address on the standard input, and find its manufacturer, and write it to a file
+echo '08:61:95' | 
+.B chktropy
+\-S > output.txt
+.PP
+.SH EXIT STATUS
+maclookup returns a zero exist status.
+.br
+Non zero is returned in case of failure.
+.SH AUTHOR
+Written by
+.B Mathias Schmitt
+.SH SEE ALSO
+ip(8), lshw(1)
+.SH COPYRIGHT
+.PP
+Copyright (C) 2020  Mathias Schmitt
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.

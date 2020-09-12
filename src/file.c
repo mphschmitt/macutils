@@ -44,7 +44,8 @@ static void curl_error(char const *str_error)
  * It was possible to pass NULL to CURLOPT_WRITEFUNCTION and pass a FILE* to
  * CURLOPT_WRITEDATA but whatever...
  *
- * @return As request by libcurl, the number of bytes taken care of is returned
+ * @return As requested by libcurl, the number of bytes taken care of is
+ * returned
  */
 static size_t write_to_file(char *ptr, size_t size, size_t nmemb,
 	void *userdata)
@@ -117,6 +118,7 @@ int restore_backup(char const * file, char const * backup)
 			"Aborting...\n",
 			file, backup, strerror(errno));
 	}
+
 	return errno;
 }
 

@@ -53,7 +53,7 @@ static void version(void)
 	"\n"
 	"Copyright (C) 2020 Mathias Schmitt\n"
 	"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
-	"This is free software, and you are welcome to change and redistribute it\n"
+	"This is free software, and you are welcome to change and redistribute it.\n"
 	"This program comes with ABSOLUTELY NO WARRANTY.\n");
 }
 

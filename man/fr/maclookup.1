@@ -1,0 +1,97 @@
+.TH maclookup 1  "Semtembre 12, 2020" "version 1.0" "USER COMMANDS"
+.SH NAME
+maclookup \- Interroge la base de donnees oui de l'IEE
+.SH SYNOPSIS
+.B maclookup
+[\-huv] mac-address | fabricant
+.SH DESCRIPTION
+.B maclookup
+Lit une addresse mac passee en argument, et trouve son fabricant dans la base de donnes oui.txt.
+Il est aussi possible de realiser une recherche inversee, et de recuperer toutes les addresses mac associees a un fabricant en passant son nom en argument.
+.PP
+Le programme a ete concu pour un usage rapide en ligne de commande, plutot que d'utiliser des outils internet.
+Il est aussi possible de lire l'addresse mac (ou le nom du fabricant) depuis l'entree standard, plus adapte a l'usage dans un flux de donees (voir
+.B EXEMPLES\fR)
+en utilisant l'option
+.B -S
+.PP
+Le resultat d'une requet est les donnees brutes du fichier oui.txt:
+.PP
+OUI/MA-L        Organization
+.br
+company_id      Organization
+.br
+                Address
+.PP
+La premiere ligne contient les 3 premiers chiffres de l'addresse mac, designant le fabricant, ainsi que le nom du fabriquant.
+.br
+La seconde ligne contient aussi les 3 premiers chiffres de l'addresse mac, designant le fabricant, ainsi que le nom du fabriquant.
+.br
+Enfin, la troisieme ligne contient l'addresse du fabricant.
+.PP
+Le fichier oui.txt est entierement stocke sur l'hote. De cette facon, il n'est pas necessaire d'avoir une connection internet pour interroger la base de donnees de l'iee.
+.br
+Cependant, une connection internet est requise pour la mise a jour de la base de donnees ainsi que durant l'installation. Su la base de donnees n'est pas entierement recuperee pendant l'installation a cause d'une connection internet defectueuse, il est possible de reessayer plus tard en utilisant l'option
+.B --update
+.PP
+.B maclookup
+reste a jout en telechargeant la derniere base de donnees de l'iee et en la stockant dans
+.B /usr/local/share/maclookup\fR.
+La mise a jour n'est pas automatique, et est realisee a la demande de l'utilisateur en utilisant l'option
+.B -u
+(voir
+.B EXEMPLES\fR).
+Avant de mettre la base de donnees a jour, une copie est creee. Si la mise a jour echoue ou est stoppee (en envoyant un signal par example), alors la copie est restauree et sera utilisee dans les utilisations subsequentes de 
+.B maclookup\fR.
+.PP
+.SH OPTIONS
+.TP
+.B \-h, --help
+affiche ce message d'aide et quitte
+.TP
+.B \-v, --version
+affiche la version et d'autres informations puis quitte
+.TP
+.B \-u, --update
+Mets a jour la database oui.txt
+.SH EXEMPLES
+Toutes les addresses mac utilisee ci-dessous sont generees aleatoirement, avec les trois premiers chiffres du fabricant valides.
+.TP
+Trouve la fabricant de l'addresse mac
+.B maclookup
+08:61:95:02:ff:f2
+.PP
+.TP
+Trouve le fabricant de l'addresse mac en utilisant uniquement les trois premiers chiffres du fabricant
+.B maclookup
+08-61-95
+.PP
+.TP
+Lit une addresse mac sur l'entree standard et trouve son fabricant
+echo '08:61:95:02:2b:4c' | 
+.B chktropy
+\-S
+.PP
+.TP
+Lit une addresse mac sur l'entree standard et ecrit son fabricant dans un fichier
+echo '08:61:95' | 
+.B chktropy
+\-S > output.txt
+.PP
+.SH EXIT STATUS
+maclookup retourne 0 en cas de succes.
+.br
+Une valeur differente de zero est retournee en cas d'echec.
+.SH AUTHOR
+Ecrit par
+.B Mathias Schmitt
+.SH VOIR AUSSI
+ip(8), lshw(1)
+.SH COPYRIGHT
+.PP
+Copyright (C) 2020  Mathias Schmitt
+
+Ce programme est un logiciel libre; vous pouvez le redistribuer et/ou le
+modifier selon les termes de la licence GNU General Public License comme
+publiee par la Free Software Foundation, soit la version 3 de ladite licence,
+ou (a votre convenance) n'importe quelle version suivante.
