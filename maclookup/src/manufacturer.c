@@ -25,57 +25,9 @@
 
 #include "checker.h"
 #include "manufacturer.h"
+#include "libreadoui.h"
 
 #define MANUFACTURER_DIGITS 8
-
-static void print_error(void)
-{
-	printf("Error:\n"
-		"  Failed to open/read database file: \"%s\".\n"
-		"  Try 'maclookup -u' to download the latest version from "
-		"the iee.\n",
-		strerror(errno));
-}
-
-/**
- * @brief Skip the first lines from the file.
- *
- * These lines are a header that describes the format of the file.
- * They are of no use to maclookup.
- *
- * @param oui The file to read
- */
-static int skip_header(FILE *oui)
-{
-	ssize_t read;
-	size_t buff_size;
-	char *line = NULL;
-
-	while ((read = getline(&line, &buff_size, oui))) {
-		if (read == -1) {
-			if (errno) {
-				print_error();
-				return -errno;
-			}
-			break;
-		}
-
-		if (line && line[0] == '\r' && line[1] == '\n')
-			break;
-
-		if (line) {
-			free(line);
-			line = NULL;
-		}
-	}
-
-	if (line) {
-		free(line);
-		line = NULL;
-	}
-
-	return 0;
-}
 
 static int compare_mac_addresses(char *mac1, char *mac2)
 {
@@ -103,7 +55,7 @@ static int find_mac_address(FILE *oui, char *mac)
 	while ((read = getline(&line, &buff_size, oui))) {
 		if (read == -1) {
 			if (errno) {
-				print_error();
+				libreadoui_print_error();
 				return -errno;
 			}
 			return 0;
@@ -149,11 +101,11 @@ int find_manufacturer(char * mac, char const * filename)
 
 	oui = fopen(filename, "r");
 	if (!oui) {
-		print_error();
+		libreadoui_print_error();
 		return -errno;
 	}
 
-	ret = skip_header(oui);
+	ret = libreadoui_skip_header(oui);
 	if (ret)
 		goto end;
 

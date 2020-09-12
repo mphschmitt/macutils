@@ -1,5 +1,5 @@
 /*
-    macrandom Generate a random mac address
+    libreadoui Read the iee's oui.txt file
     Copyright (C) 2020  Mathias Schmitt
 
     This program is free software: you can redistribute it and/or modify
@@ -17,32 +17,11 @@
 */
 
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
 
-#define OUI "oui.txt"
-#define OUI_PATH "/usr/local/share/maclookup/"
-#define BUF_SIZE 512
-
-static void usage(void)
-{
-	printf(
-		"Usage: maclookup [OPTIONS] [MAC-ADDRESS]\n"
-		"Display the manufacturer of a network interface\n"
-		"  -h  --help       display this help message and exit\n"
-		"  -v  --version    output version information and exit\n");
-}
-
-static void version(void)
-{
-	printf(
-	"macrandom 1.0.0\n"
-	"\n"
-	"Copyright (C) 2020 Mathias Schmitt\n"
-	"License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
-	"This is free software, and you are welcome to change and redistribute it.\n"
-	"This program comes with ABSOLUTELY NO WARRANTY.\n");
-}
-
-static void print_error(void)
+void libreadoui_print_error(void)
 {
 	printf("Error:\n"
 		"  Failed to open/read database file: \"%s\".\n"
@@ -51,17 +30,43 @@ static void print_error(void)
 		strerror(errno));
 }
 
-int main(void)
+/**
+ * @brief Skip the first lines from the file.
+ *
+ * These lines are a header that describes the format of the file.
+ * They are of no use to maclookup.
+ *
+ * @param oui The file to read
+ */
+int libreadoui_skip_header(FILE *oui)
 {
-	int ret;
-	FILE *oui;
-	char oui[BUF_SIZE];
+	ssize_t read;
+	size_t buff_size;
+	char *line = NULL;
 
-	oui = fopen(filename, "r");
-	if (!oui) {
-		print_error();
-		return errno;
+	while ((read = getline(&line, &buff_size, oui))) {
+		if (read == -1) {
+			if (errno) {
+				libreadoui_print_error();
+				return -errno;
+			}
+			break;
+		}
+
+		if (line && line[0] == '\r' && line[1] == '\n')
+			break;
+
+		if (line) {
+			free(line);
+			line = NULL;
+		}
+	}
+
+	if (line) {
+		free(line);
+		line = NULL;
 	}
 
 	return 0;
 }
+

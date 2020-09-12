@@ -39,6 +39,7 @@ SRC := main.c \
 SOURCES := $(addprefix src/, ${SRC})
 
 INCLUDES := includes
+LIBREAD_OUI_PATH := ../libreadoui
 LDLIBS := -lcurl
 
 MAN_DIR := man
@@ -55,7 +56,7 @@ all: maclookup
 .PHONY: maclookup
 maclookup: ${SOURCES}
 	@mkdir -p ${OUTPUT_DIR}
-	${COMPILER} ${SOURCES} -I${INCLUDES} ${LDLIBS} ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
+	@${COMPILER} ${SOURCES} -I${INCLUDES} -I${LIBREAD_OUI_PATH} ${LIBREAD_OUI_PATH}/libreadoui.a ${LDLIBS} ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
 
 .PHONY: install
 install: ${OUTPUT_DIR}/${PROG_NAME} install_man download_data
@@ -73,9 +74,6 @@ install_man:
 
 	@mkdir -p ${DESTDIR}${INSTALL_MAN_DIR_FR}
 	@cp ${MAN_DIR}/fr/${MAN} ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
-
-	# Fedora
-	# sudo dnf install libcurl-devel
 
 .PHONY: uninstall_man
 uninstall_man:

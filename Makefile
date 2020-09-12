@@ -15,28 +15,43 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 MACLOOKUP_PATH := ./maclookup
+MACRANDOM_PATH := ./macrandom
+LIBREADOUI_PATH := ./libreadoui
 
-.PHONY: all
-all: maclookup macrandom
+default: all
+
+.PHONY: libreadoui
+libreadoui:
+	@make -C ${LIBREADOUI_PATH}
 
 .PHONY: maclookup
-maclookup:
+maclookup: libreadoui
 	@make -C ${MACLOOKUP_PATH}
 
 .PHONY: macrandom
-macrandom:
+macrandom: libreadoui
+	@make -C ${MACRANDOM_PATH}
+
+.PHONY: all
+all: libreadoui maclookup macrandom
 
 .PHONY: install
 install:
 	@make install -C ${MACLOOKUP_PATH}
+	@make install -C ${MACRANDOM_PATH}
+	@make install -C ${LIBREADOUI_PATH}
 
 .PHONY: uninstall
 uninstall:
 	@make uninstall -C ${MACLOOKUP_PATH}
+	@make uninstall -C ${MACRANDOM_PATH}
+	@make uninstall -C ${LIBREADOUI_PATH}
 
 .PHONY: clean
 clean:
 	@make clean -C ${MACLOOKUP_PATH}
+	@make clean -C ${MACRANDOM_PATH}
+	@make clean -C ${LIBREADOUI_PATH}
 
 .PHONY: help
 help:
