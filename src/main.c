@@ -22,10 +22,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include "checker.h"
 #include "manufacturer.h"
 #include "file.h"
+#include "signals.h"
 
 #define OUI "oui.txt"
 #define OUI_PATH "/usr/local/share/maclookup/"
@@ -114,6 +116,10 @@ int main(int argc, char *argv[])
 		goto end;
 	}
 
+	/* Restore the backup if exist during update */
+	/* That way we avoid to use an incomplete file */
+	signal_handler();
+
 	if (args & ARGS_U) {
 		update(OUI_PATH, OUI);
 		goto end;
@@ -125,5 +131,8 @@ int main(int argc, char *argv[])
 	find_manufacturer(mac_address, OUI_PATH OUI);
 
 end:
+	free(mac_address);
+	mac_address = NULL;
+
 	return res;
 }

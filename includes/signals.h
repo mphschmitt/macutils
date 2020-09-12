@@ -16,10 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _FILE_H_
-#define _FILE_H_
+#ifndef _SIGNALS_H_
+#define _SIGNALS_H_
 
-int restore_backup(char const * file, char const * backup);
-int update(char const *path, char const *file);
+void set_cleanup_cb(int cleanup_cb(char const *, char const *),
+		char const * arg1, char const *arg2);
+void signal_handler(void);
 
-#endif /* _FILE_H_ */
+#endif /* _SIGNALS_H_  */

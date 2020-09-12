@@ -22,14 +22,22 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdbool.h>
-
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 
+#include "signals.h"
+
 #define HOST "http://standards-oui.ieee.org/oui/oui.txt"
 #define BUF_SIZE 512
 #define BUF_SIZE_BIG 2048
+
+static void curl_error(char const *str_error)
+{
+	printf("Error:\n"
+		"  %s.\n"
+		"  Aborting update...\n", str_error);
+}
 
 /*
  * See https://curl.haxx.se/libcurl/c/CURLOPT_WRITEFUNCTION.html
@@ -54,7 +62,65 @@ static size_t write_to_file(char *ptr, size_t size, size_t nmemb,
 	return (size_t)handled_bytes;
 }
 
-int update(const char *path, const char *file)
+static int curl_set_options(CURL *curl, int fd_oui)
+{
+	int res;
+
+	res = 0;
+
+	res = curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+	if (res) {
+		curl_error(curl_easy_strerror(res));
+		goto out;
+	}
+
+	res = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+	if (res) {
+		curl_error(curl_easy_strerror(res));
+		goto out;
+	}
+
+	res = curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
+	if (res) {
+		curl_error(curl_easy_strerror(res));
+		goto out;
+	}
+
+	res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &write_to_file);
+	if (res) {
+		curl_error(curl_easy_strerror(res));
+		goto out;
+	}
+
+	res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &fd_oui);
+	if (res) {
+		curl_error(curl_easy_strerror(res));
+		goto out;
+	}
+
+	res = curl_easy_setopt(curl, CURLOPT_URL, HOST);
+	if (res) {
+		curl_error(curl_easy_strerror(res));
+		goto out;
+	}
+
+out:
+	return res;
+}
+
+int restore_backup(char const * file, char const * backup)
+{
+	/* Restore file from its copy */
+	if (rename(backup, file)) {
+		printf("Error:\n"
+			"Failed to restore file %s from %s -> %s\n"
+			"Aborting...\n",
+			file, backup, strerror(errno));
+	}
+	return errno;
+}
+
+int update(char const *path, char const *file)
 {
 	CURL *curl;
 	CURLcode res;
@@ -118,57 +184,28 @@ int update(const char *path, const char *file)
 	/* Must be called at least once */
 	res = curl_global_init(CURL_GLOBAL_ALL);
 	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
+		curl_error(curl_easy_strerror(res));
 		goto oui_save_out;
 	}
 
 	curl = curl_easy_init();
 	if (!curl) {
-		printf("CURL: %s\n", curl_easy_strerror(CURLE_FAILED_INIT));
+		curl_error(curl_easy_strerror(CURLE_FAILED_INIT));
 		goto global_out;
 	}
 
 	/* Set options */
-	res = curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
-	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
+	if (curl_set_options(curl, fd_oui))
 		goto easy_out;
-	}
 
-	res = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
-		goto easy_out;
-	}
-
-	res = curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
-	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
-		goto easy_out;
-	}
-
-	res = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &write_to_file);
-	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
-		goto easy_out;
-	}
-
-	res = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &fd_oui);
-	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
-		goto easy_out;
-	}
-
-	res = curl_easy_setopt(curl, CURLOPT_URL, HOST);
-	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
-		goto easy_out;
-	}
+	/* Specify how to restore backup, since it is now needed */
+	set_cleanup_cb(&restore_backup, oui, oui_save);
 
 	/* Remove old oui.txt file */
 	if (remove(oui)) {
-		printf("Failed to remove file %s -> %s\nAborting...\n", oui,
-			strerror(errno));
+		printf("Error:\n"
+			"  Failed to remove file %s -> %s\n"
+			"  Aborting...\n", oui, strerror(errno));
 		goto oui_save_out;
 	}
 
@@ -185,12 +222,13 @@ int update(const char *path, const char *file)
 	/* Perform the request */
 	res = curl_easy_perform(curl);
 	if (res) {
-		printf("CURL: %s\n", curl_easy_strerror(res));
+		curl_error(curl_easy_strerror(res));
 
 		/* Restore oui.txt from its copy */
 		if (rename(oui_save, oui)) {
-			printf("Failed to rename file %s -> %s\nAborting...\n", oui_save,
-				strerror(errno));
+			printf("Error:\n"
+				"  Failed to rename file %s -> %s\n"
+				"  Aborting...\n", oui_save, strerror(errno));
 		}
 
 		goto easy_out;

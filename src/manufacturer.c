@@ -21,11 +21,21 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "checker.h"
 #include "manufacturer.h"
 
 #define MANUFACTURER_DIGITS 8
+
+static void print_error(void)
+{
+	printf("Error:\n"
+		"  Failed to open/read database file: \"%s\".\n"
+		"  Try 'maclookup -u' to download the latest version from "
+		"the iee.\n",
+		strerror(errno));
+}
 
 /**
  * @brief Skip the first lines from the file.
@@ -44,7 +54,7 @@ static int skip_header(FILE *oui)
 	while ((read = getline(&line, &buff_size, oui))) {
 		if (read == -1) {
 			if (errno) {
-				printf("%s\n", strerror(errno));
+				print_error();
 				return -errno;
 			}
 			break;
@@ -52,6 +62,16 @@ static int skip_header(FILE *oui)
 
 		if (line && line[0] == '\r' && line[1] == '\n')
 			break;
+
+		if (line) {
+			free(line);
+			line = NULL;
+		}
+	}
+
+	if (line) {
+		free(line);
+		line = NULL;
 	}
 
 	return 0;
@@ -83,7 +103,7 @@ static int find_mac_address(FILE *oui, char *mac)
 	while ((read = getline(&line, &buff_size, oui))) {
 		if (read == -1) {
 			if (errno) {
-				printf("%s\n", strerror(errno));
+				print_error();
 				return -errno;
 			}
 			return 0;
@@ -107,6 +127,16 @@ static int find_mac_address(FILE *oui, char *mac)
 		 * break */
 		if (last_entry)
 			printf("%s", line);
+
+		if (line) {
+			free(line);
+			line = NULL;
+		}
+	}
+
+	if (line) {
+		free(line);
+		line = NULL;
 	}
 
 	return 0;
@@ -119,7 +149,7 @@ int find_manufacturer(char * mac, char const * filename)
 
 	oui = fopen(filename, "r");
 	if (!oui) {
-		printf("%s\n", strerror(errno));
+		print_error();
 		return -errno;
 	}
 
