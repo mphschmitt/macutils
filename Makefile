@@ -1,4 +1,4 @@
-# maclookup Find the manufacturer of a network interface
+# macutils Utilities to manipulate mac addresses
 # Copyright (C) 2020  Mathias Schmitt
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,87 +14,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-COMPILER := gcc
-MATH_FLAGS := -lm
-ERROR_FLAGS := -Wall \
-		-Werror \
-		-Wextra \
-		-pedantic \
-		-Wshadow \
-		-Wdouble-promotion \
-		-fno-common \
-		-Wconversion
-FORMAT_FLAGS := -Wformat=2 -Wundef
-OPTIMIZATION_FLAGS := -O3
-FLAGS := ${MATH_FLAGS} ${ERROR_FLAGS} ${FORMAT_FLAGS} ${OPTIMIZATION_FLAGS}
-
-OUTPUT_DIR := out
-
-PROG_NAME := maclookup
-SRC := main.c \
-	checker.c \
-	manufacturer.c \
-	file.c \
-	signals.c
-SOURCES := $(addprefix src/, ${SRC})
-
-INCLUDES := includes
-LDLIBS := -lcurl
-
-MAN_DIR := man
-MAN := ${PROG_NAME}.1
-INSTALL_DIR := /usr/local/bin
-INSTALL_MAN_DIR := /usr/local/share/man/man1
-INSTALL_MAN_DIR_FR := /usr/local/share/man/fr/man1
-
-DATABASE_DIR := /usr/local/share/${PROG_NAME}
+MACLOOKUP_PATH := ./maclookup
 
 .PHONY: all
-all: maclookup
+all: maclookup macrandom
 
 .PHONY: maclookup
-maclookup: ${SOURCES}
-	@mkdir -p ${OUTPUT_DIR}
-	${COMPILER} ${SOURCES} -I${INCLUDES} ${LDLIBS} ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
+maclookup:
+	@make -C ${MACLOOKUP_PATH}
+
+.PHONY: macrandom
+macrandom:
 
 .PHONY: install
-install: ${OUTPUT_DIR}/${PROG_NAME} install_man download_data
-	@mkdir -p ${DESTDIR}${INSTALL_DIR}
-	@cp $< ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
+install:
+	@make install -C ${MACLOOKUP_PATH}
 
 .PHONY: uninstall
-uninstall: uninstall_man
-	@rm ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
-
-.PHONY: install_man
-install_man:
-	@mkdir -p ${DESTDIR}${INSTALL_MAN_DIR}
-	@cp ${MAN_DIR}/${MAN} ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
-
-	@mkdir -p ${DESTDIR}${INSTALL_MAN_DIR_FR}
-	@cp ${MAN_DIR}/fr/${MAN} ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
-
-	# Fedora
-	# sudo dnf install libcurl-devel
-
-.PHONY: uninstall_man
-uninstall_man:
-	rm ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
-	rm ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
-
-.PHONY: download_data
-download_data:
-	@mkdir -p ${DATABASE_DIR}
-	@bash -c 'curl --connect-timeout 10 http://standards-oui.ieee.org/oui.txt > ${DATABASE_DIR}/oui.txt'
+uninstall:
+	@make uninstall -C ${MACLOOKUP_PATH}
 
 .PHONY: clean
 clean:
-	@rm -rf ${OUTPUT_DIR}
+	@make clean -C ${MACLOOKUP_PATH}
 
 .PHONY: help
 help:
 	@echo "Use one of the following targets:"
 	@echo "  help     Print this help message"
-	@echo "  all      Build maclookup"
+	@echo "  all      Build macutils programs"
 	@echo "  clean    Clean output from previous build"
-	@echo "  install  Install maclookup on your system"
+	@echo "  install  Install macutils programs on your system"

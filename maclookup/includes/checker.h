@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdbool.h>
+
 #ifndef _CHECKER_H_
 #define _CHECKER_H_
 
