@@ -17,10 +17,23 @@
 */
 
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <time.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#include "libreadoui.h"
 
 #define OUI "oui.txt"
 #define OUI_PATH "/usr/local/share/maclookup/"
 #define BUF_SIZE 512
+
+enum arguments {
+	ARGS_V = 0X01 /* Display version */
+};
 
 static void usage(void)
 {
@@ -42,26 +55,145 @@ static void version(void)
 	"This program comes with ABSOLUTELY NO WARRANTY.\n");
 }
 
-static void print_error(void)
+static char check_arguments(int argc, char *argv[])
 {
-	printf("Error:\n"
-		"  Failed to open/read database file: \"%s\".\n"
-		"  Try 'maclookup -u' to download the latest version from "
-		"the iee.\n",
-		strerror(errno));
+	int opt;
+	char args = 0;
+	struct option long_options[] = {
+		{"help", no_argument, 0, 'h'},
+		{"version", no_argument, 0, 'v'},
+		{0, 0, 0, 0}
+	};
+
+	while ((opt = getopt_long(argc, argv, "hv", long_options, NULL)) != -1) {
+		switch (opt) {
+		case 'v':
+			if (optind < argc) {
+				usage();
+				return -EINVAL;
+			}
+			args |= ARGS_V;
+			version();
+			break;
+		case 'h':
+		case '?':
+			usage();
+			return -EINVAL;
+		default:
+			break;
+		}
+	}
+
+	if (args & ARGS_V)
+		return 0;
+
+	if (optind != argc) {
+		usage();
+		return -EINVAL;
+	}
+
+	return args;
 }
 
-int main(void)
+static int get_random_manufacturer(int nb_of_manufacturers)
+{
+	time_t now;
+
+	now = time(NULL);
+	if (now < 0) {
+		printf("Error: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	srand((unsigned int)now);
+
+	return rand() % nb_of_manufacturers;
+}
+
+static int get_number_of_manufacturers(FILE * oui)
 {
 	int ret;
-	FILE *oui;
-	char oui[BUF_SIZE];
+	int nb;
 
-	oui = fopen(filename, "r");
-	if (!oui) {
-		print_error();
-		return errno;
+	nb = 0;
+
+	ret = libreadoui_skip_header(oui);
+	if (ret)
+		return ret;
+
+	while (true) {
+		nb += 1;
+		ret = libreadoui_get_next_manufacturer(oui);
+		if (ret <= 0)
+			break;
+	}
+
+	return nb;
+}
+
+static int goto_manufacturer(FILE * oui, int manufacturer_pos,
+		int manufacturer_choice)
+{
+	int ret;
+	int nb;
+
+	nb = 0;
+	ret = 0;
+
+	ret = libreadoui_skip_header(oui);
+	if (ret < 0)
+		return ret;
+
+	while (nb < manufacturer_pos && nb != manufacturer_choice) {
+		nb += 1;
+		ret = libreadoui_get_next_manufacturer(oui);
+		if (ret <= 0)
+			break;
 	}
 
 	return 0;
+}
+
+int main(int argc, char * argv[])
+{
+	char args = 0;
+	int ret = 0;
+	int nb_of_manufacturers;
+	int manufacturer_choice;
+	FILE * oui;
+
+	args = check_arguments(argc, argv);
+	if (args < 0)
+		return -EINVAL;
+
+	if (args & ARGS_V)
+		goto end;
+
+	oui = fopen(OUI_PATH OUI, "r");
+	if (!oui) {
+		libreadoui_print_error();
+		return errno;
+	}
+
+	nb_of_manufacturers = get_number_of_manufacturers(oui);
+	rewind(oui);
+
+	manufacturer_choice = get_random_manufacturer(nb_of_manufacturers);
+	ret = goto_manufacturer(oui, nb_of_manufacturers, manufacturer_choice);
+	if (ret)
+		goto end;
+	libreadoui_print_manufacturer(oui);
+
+end:
+	libreadoui_line_free();
+
+	if (oui) {
+		ret = fclose(oui);
+		if (ret) {
+			printf("%s\n", strerror(errno));
+			return -errno;
+		}
+	}
+
+	return ret;
 }

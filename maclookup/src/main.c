@@ -33,7 +33,8 @@
 #define OUI_PATH "/usr/local/share/maclookup/"
 
 enum arguments {
-	ARGS_U = 0X01 /* Update the database of manufacturers */
+	ARGS_U = 0X01, /* Update the database of manufacturers */
+	ARGS_V = 0X02 /* Display version */
 };
 
 static void usage(void)
@@ -74,6 +75,11 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 			args |= ARGS_U;
 			break;
 		case 'v':
+			if (optind < argc) {
+				usage();
+				return -EINVAL;
+			}
+			args |= ARGS_V;
 			version();
 			return -EINVAL;
 		case 'h':
@@ -85,12 +91,15 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 		}
 	}
 
+	if (args & ARGS_V)
+		return 0;
+
 	if (optind + 1 == argc) {
 		if (!mac_address_is_valid(argv[1])) {
 			printf("Invalid mac address: %s\n", argv[1]);
 			return -EINVAL;
 		}
-		*mac_address = strndup(argv[1], strlen(argv[1]) - 1);
+		*mac_address = strndup(argv[1], strlen(argv[1]));
 	} else if (optind < argc) {
 		printf("Invalid argument: %s\n", argv[1]);
 		usage();
@@ -115,6 +124,9 @@ int main(int argc, char *argv[])
 		res = -EINVAL;
 		goto end;
 	}
+
+	if (args & ARGS_V)
+		goto end;
 
 	/* Restore the backup if exist during update */
 	/* That way we avoid to use an incomplete file */

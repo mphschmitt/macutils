@@ -40,7 +40,7 @@ static int compare_mac_addresses(char *mac1, char *mac2)
 		return -EINVAL;
 
 	for (i = 0; i < MANUFACTURER_DIGITS; ++i) {
-		if (!isxdigit(mac1[i]))
+		if (!isxdigit(mac2[i]))
 			continue;
 
 		if (!chars_are_equivalent(mac1[i], mac2[i]))
@@ -56,7 +56,7 @@ static int find_mac_address(FILE *oui, char *mac)
 
 	ret = 0;
 
-	/* Check first manufacturer, after the skippin headers */
+	/* Check first manufacturer, after the skipped headers */
 	if (compare_mac_addresses(libreadoui_line, mac)) {
 		libreadoui_print_manufacturer(oui);
 		return 0;
@@ -65,7 +65,7 @@ static int find_mac_address(FILE *oui, char *mac)
 	/* Check all the other manufacturers */
 	while (true) {
 		ret = libreadoui_get_next_manufacturer(oui);
-		if (ret)
+		if (ret <= 0)
 			break;
 
 		if (compare_mac_addresses(libreadoui_line, mac)) {

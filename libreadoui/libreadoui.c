@@ -81,20 +81,20 @@ int libreadoui_skip_header(FILE *ptr)
 
 int libreadoui_print_manufacturer(FILE *ptr)
 {
+	ssize_t read;
+
 	if (!ptr)
 		return -EINVAL;
 
 	printf("%s", libreadoui_line);
 	while (true) {
-		ssize_t read;
-
 		read = getline(&libreadoui_line, &libreadoui_buff_size, ptr);
 		if (read == -1) {
 			if (errno) {
 				libreadoui_print_error();
 				return -errno;
 			}
-			break;
+			return 0;
 		}
 
 		if (libreadoui_line && libreadoui_line[0] == '\r' &&
@@ -106,12 +106,13 @@ int libreadoui_print_manufacturer(FILE *ptr)
 
 	}
 
-	return 0;
+	return (int)read;
 }
 
 int libreadoui_get_next_manufacturer(FILE *ptr)
 {
 	bool is_first_line;
+	ssize_t read;
 
 	errno = 0;
 	is_first_line = false;
@@ -120,15 +121,13 @@ int libreadoui_get_next_manufacturer(FILE *ptr)
 		return -EINVAL;
 
 	while (1) {
-		ssize_t read;
-
 		read = getline(&libreadoui_line, &libreadoui_buff_size, ptr);
 		if (read == -1) {
 			if (errno) {
 				libreadoui_print_error();
 				return -errno;
 			}
-			break;
+			return 0;
 		}
 
 		if (is_first_line)
@@ -140,6 +139,6 @@ int libreadoui_get_next_manufacturer(FILE *ptr)
 		}
 	}
 
-	return 0;
+	return (int)read;
 }
 

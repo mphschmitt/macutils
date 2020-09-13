@@ -20,7 +20,7 @@
 #define _LIBREADOUI_H_
 
 /*
- * libreaoui Reads a oui.txt file.
+ * libreaoui Read a oui.txt file.
  *
  * It offers 2 global varibales: libreadoui_line and libreadoui_buff_size.
  * Both are necessary to read the file, and are completly handled by the 
@@ -29,13 +29,12 @@
  *
  * libreaoui_line is a pointer to the current line in the file.
  *
- * libreadoui_buff_size is a pointer to the current size of the buffer
- * containing the line.
+ * libreadoui_buff_size is the current size of the buffer containing the line.
  * libreadoui uses getline. Since getline may realloc the memory for each
  * new line, it is thus necessary to store the current size of the buffer to
  * avoid leaks.
  *
- * When done reading the file, the user should free the memoy by calling
+ * When done reading the file, the user should free the memory by calling
  * libreadoui_line_free.
  *
  */
