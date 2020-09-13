@@ -39,13 +39,11 @@ all: libreadoui maclookup macrandom
 install:
 	@make install -C ${MACLOOKUP_PATH}
 	@make install -C ${MACRANDOM_PATH}
-	@make install -C ${LIBREADOUI_PATH}
 
 .PHONY: uninstall
 uninstall:
 	@make uninstall -C ${MACLOOKUP_PATH}
 	@make uninstall -C ${MACRANDOM_PATH}
-	@make uninstall -C ${LIBREADOUI_PATH}
 
 .PHONY: clean
 clean:

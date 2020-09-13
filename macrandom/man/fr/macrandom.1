@@ -1,0 +1,67 @@
+.TH macrandom 1  "Septembre 12, 2020" "version 1.0" "USER COMMANDS"
+.SH NAME
+macrandom \- Genere une addresse mac valide
+.SH SYNOPSIS
+.B macrandom
+[\-hv]
+.SH DESCRIPTION
+.B macrandom
+genere une addresse mac valide a partir de la base de donnees oui.txt de l'iee. Il parse le fichier pour obtenir les trois premiers chiffres du fabricant, et les utilise pour generer une addresse mac.
+.PP
+Le programme a ete concu pour un usage rapide en ligne de commandes, plutot que d'utiliser des outils internet.
+Tres souvent, les outils internet ne generent pas d'addresse mac apparentenat a un vrai fabricant, ce qui rend tres facile leur identification comme de fausses addresses.
+.PP
+Le resultat est une addresse mac valide. Les informations du fabricant utilisees pour la generer sont aussi affichees, avec le format suivant:
+.PP
+OUI/MA-L        Organization
+.br
+company_id      Organization
+.br
+                Address
+.PP
+La premiere ligne contient les 3 premiers chiffres de l'addresse mac, designant le fabricant, ainsi que le nom du fabriquant.
+.br
+La seconde ligne contient aussi les 3 premiers chiffres de l'addresse mac, designant le fabricant, ainsi que le nom du fabriquant.
+.br
+Enfin, la troisieme ligne contient l'addresse du fabricant.
+.PP
+Le fichier oui.txt est entierement stocke sur l'hote. De cette facon, il n'est pas necessaire d'avoir une connection internet pour interroger la base de donnees de l'iee.
+.PP
+.B macrandom
+fait partie de la suite d'outils
+.B macutils\fR.
+Il ne s'agit pas d'un programme independant.
+.br
+La copie locale de la base de donnees oui.txt est geree par
+.B maclookup\fR.
+La base de donnees locale peut etre mise a jour en utilisant la commande suivante:
+.B maclookup --update
+Pour en apprendre plus sur comment
+.B maclookup
+gere la base de donnees oui.txt, se referer a
+.B man 1 maclookup
+.PP
+.SH OPTIONS
+.TP
+.B \-h, --help
+affiche ce message d'aide et quitte
+.TP
+.B \-v, --version
+affiche la version et d'autres informations puis quitte
+.SH EXIT STATUS
+macrandom retourne 0 en cas de succes.
+.br
+Une valeur differente de zero est retournee en cas d'echec.
+.SH AUTHEUR
+Ecrit par
+.B Mathias Schmitt
+.SH VOIR AUSSI
+maclookup(1)
+.SH COPYRIGHT
+.PP
+Copyright (C) 2020  Mathias Schmitt
+
+Ce programme est un logiciel libre; vous pouvez le redistribuer et/ou le
+modifier selon les termes de la licence GNU General Public License comme
+publiee par la Free Software Foundation, soit la version 3 de ladite licence,
+ou (a votre convenance) n'importe quelle version suivante.

@@ -1,0 +1,67 @@
+.TH macrandom 1  "September 12, 2020" "version 1.0" "USER COMMANDS"
+.SH NAME
+macrandom \- Generate a valid mac address
+.SH SYNOPSIS
+.B macrandom
+[\-hv]
+.SH DESCRIPTION
+.B macrandom
+generates a valid mac address from the iee's oui.txt database. It parses the file to obtain valid manufacturer's digits, and use them to generate a valid mac address.
+.PP
+It is designed for a quick use in the terminal, instead of using internet based tools.
+Very often, internet based tools do not generate mac addresses belonging to a real manufacturer, making them easy to identify as fake.
+.PP
+The result will be a valid mac address. The manufacturer's informations used to generate it are also displayed, following this format:
+.PP
+OUI/MA-L        Organization
+.br
+company_id      Organization
+.br
+                Address
+.PP
+The first line contains the three digits mac address prefix of the organization, and the organization name.
+.br
+The second line also contains the three digits mac address prefix of the organization, and the organization name.
+.br
+Finally, the third line is the address of the organization.
+.PP
+The full oui.txt file is stored locally on the host. Thus, it is not necessary to have an internet connection to query the iee's manufacturers database.
+.PP
+.B macrandom
+is part of the
+.B macutils
+suite of tools. It is not a standalone program.
+.br
+The local copy of oui.txt database is managed by
+.B maclookup\fR.
+The local database can be updated by using the following command: 
+.B maclookup --update
+To learn more about how
+.B maclookup
+manages the oui.txt database, refer to
+.B man 1 maclookup
+.PP
+.SH OPTIONS
+.TP
+.B \-h, --help
+display this help message and exit
+.TP
+.B \-v, --version
+output version information and exit
+.SH EXIT STATUS
+macrandom returns a zero exist status.
+.br
+Non zero is returned in case of failure.
+.SH AUTHOR
+Written by
+.B Mathias Schmitt
+.SH SEE ALSO
+maclookup(1)
+.SH COPYRIGHT
+.PP
+Copyright (C) 2020  Mathias Schmitt
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.

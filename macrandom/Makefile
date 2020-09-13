@@ -55,7 +55,7 @@ install:
 
 .PHONY: uninstall
 uninstall: uninstall_man
-	@rm ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
+	@rm -f ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
 
 .PHONY: install_man
 install_man:
@@ -67,8 +67,8 @@ install_man:
 
 .PHONY: uninstall_man
 uninstall_man:
-	@rm ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
-	@rm ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
+	@rm -f ${DESTDIR}${INSTALL_MAN_DIR}/${MAN}
+	@rm -f ${DESTDIR}${INSTALL_MAN_DIR_FR}/${MAN}
 
 .PHONY: clean
 clean:

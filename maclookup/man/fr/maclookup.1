@@ -69,24 +69,24 @@ Trouve le fabricant de l'addresse mac en utilisant uniquement les trois premiers
 .TP
 Lit une addresse mac sur l'entree standard et trouve son fabricant
 echo '08:61:95:02:2b:4c' | 
-.B chktropy
+.B maclookup
 \-S
 .PP
 .TP
 Lit une addresse mac sur l'entree standard et ecrit son fabricant dans un fichier
 echo '08:61:95' | 
-.B chktropy
+.B maclookup
 \-S > output.txt
 .PP
 .SH EXIT STATUS
 maclookup retourne 0 en cas de succes.
 .br
 Une valeur differente de zero est retournee en cas d'echec.
-.SH AUTHOR
+.SH AUTHEUR
 Ecrit par
 .B Mathias Schmitt
 .SH VOIR AUSSI
-ip(8), lshw(1)
+macrandom(1), ip(8), lshw(1)
 .SH COPYRIGHT
 .PP
 Copyright (C) 2020  Mathias Schmitt

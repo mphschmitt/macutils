@@ -30,6 +30,9 @@
 #define OUI "oui.txt"
 #define OUI_PATH "/usr/local/share/maclookup/"
 #define BUF_SIZE 512
+#define MANUFACTURER_DIGITS 8
+
+extern char * libreadoui_line;
 
 enum arguments {
 	ARGS_V = 0X01 /* Display version */
@@ -154,12 +157,63 @@ static int goto_manufacturer(FILE * oui, int manufacturer_pos,
 	return 0;
 }
 
+static int extact_prefix(char mac[BUF_SIZE])
+{
+	int i;
+	
+	if (!mac)
+		return -EINVAL;
+
+	for (i = 0; i < MANUFACTURER_DIGITS; ++i)
+		mac[i] = libreadoui_line[i];
+
+	return 0;
+}
+
+static int fill_random(char mac[BUF_SIZE])
+{
+	int i;
+	int pos;
+	int nb;
+	time_t now;
+	char hexa[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
+		'B', 'C', 'D', 'E', 'F'};
+
+	if (!mac)
+		return -EINVAL;
+
+	pos = MANUFACTURER_DIGITS;
+	now = time(NULL);
+	if (now < 0) {
+		printf("Error: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	srand((unsigned int)now);
+
+	for (i = 0; i < 3; ++i) {
+		mac[pos] = '-';
+		pos += 1;
+
+		nb = rand() % (int)sizeof(hexa);
+		mac[pos] = hexa[nb];
+		pos += 1;
+
+		nb = rand() % (int)sizeof(hexa);
+		mac[pos] = hexa[nb];
+		pos += 1;
+	}
+
+	return 0;
+}
+
 int main(int argc, char * argv[])
 {
 	char args = 0;
 	int ret = 0;
 	int nb_of_manufacturers;
 	int manufacturer_choice;
+	char mac[BUF_SIZE] = {0};
 	FILE * oui;
 
 	args = check_arguments(argc, argv);
@@ -182,6 +236,16 @@ int main(int argc, char * argv[])
 	ret = goto_manufacturer(oui, nb_of_manufacturers, manufacturer_choice);
 	if (ret)
 		goto end;
+	ret = extact_prefix(mac);
+	if (ret)
+		goto end;
+	ret = fill_random(mac);
+	if (ret)
+		goto end;
+	printf("-------------------------------------------------\n\n");
+	printf("Randomly generated mac address: %s\n\n", mac);
+	printf("-------------------------------------------------\n\n");
+	printf("Manufacturer informations:\n\n");
 	libreadoui_print_manufacturer(oui);
 
 end:

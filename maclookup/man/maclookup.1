@@ -71,13 +71,13 @@ Find the manufacturer of a mac address using only manufacturer digits
 .TP
 Read a mac address on the standard input, and find its manufacturer
 echo '08:61:95:02:2b:4c' | 
-.B chktropy
+.B maclookup
 \-S
 .PP
 .TP
 Read a mac address on the standard input, and find its manufacturer, and write it to a file
 echo '08:61:95' | 
-.B chktropy
+.B maclookup
 \-S > output.txt
 .PP
 .SH EXIT STATUS
@@ -88,7 +88,7 @@ Non zero is returned in case of failure.
 Written by
 .B Mathias Schmitt
 .SH SEE ALSO
-ip(8), lshw(1)
+macrandom(1), ip(8), lshw(1)
 .SH COPYRIGHT
 .PP
 Copyright (C) 2020  Mathias Schmitt
