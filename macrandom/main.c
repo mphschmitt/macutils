@@ -41,8 +41,8 @@ enum arguments {
 static void usage(void)
 {
 	printf(
-		"Usage: maclookup [OPTIONS] [MAC-ADDRESS]\n"
-		"Display the manufacturer of a network interface\n"
+		"Usage: macrandom [OPTIONS]\n"
+		"Randomly generate a valid mac address\n"
 		"  -h  --help       display this help message and exit\n"
 		"  -v  --version    output version information and exit\n");
 }

@@ -51,7 +51,9 @@ macrandom: ${SOURCES}
 	@${COMPILER} ${SOURCES} -I${LIBREAD_OUI_PATH} ${LIBREAD_OUI_PATH}/libreadoui.a ${FLAGS} -o ${OUTPUT_DIR}/${PROG_NAME}
 
 .PHONY: install
-install:
+install: ${OUTPUT_DIR}/${PROG_NAME} install_man
+	@mkdir -p ${DESTDIR}${INSTALL_DIR}
+	@cp $< ${DESTDIR}${INSTALL_DIR}/${PROG_NAME}
 
 .PHONY: uninstall
 uninstall: uninstall_man

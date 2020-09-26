@@ -18,6 +18,8 @@ MACLOOKUP_PATH := ./maclookup
 MACRANDOM_PATH := ./macrandom
 LIBREADOUI_PATH := ./libreadoui
 
+DATABASE_DIR := /usr/local/share/maclookup
+
 default: all
 
 .PHONY: libreadoui
@@ -44,6 +46,7 @@ install:
 uninstall:
 	@make uninstall -C ${MACLOOKUP_PATH}
 	@make uninstall -C ${MACRANDOM_PATH}
+	@rm -rf ${DATABASE_DIR}
 
 .PHONY: clean
 clean:
