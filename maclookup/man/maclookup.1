@@ -7,13 +7,12 @@ maclookup \- Query IEE's oui database
 .SH DESCRIPTION
 .B maclookup
 reads a mac address passed as an argument, and find its manufacturer in the iee's oui.txt database.
-It can also do a reverse search, retrieving all possible three digits mac prefix for a manufacturer.
 .PP
 It is designed for a quick search in the terminal, instead of using internet based tools.
 It is also possible to read the mac address (or the manufacturer name) from the stdin for use in a datapipe (see
 .B EXAMPLES\fR)
 by using the
-.B -S
+.B -s
 option.
 .PP
 The result of a query is the raw data from the oui.txt:
@@ -72,13 +71,13 @@ Find the manufacturer of a mac address using only manufacturer digits
 Read a mac address on the standard input, and find its manufacturer
 echo '08:61:95:02:2b:4c' | 
 .B maclookup
-\-S
+\-s
 .PP
 .TP
 Read a mac address on the standard input, and find its manufacturer, and write it to a file
 echo '08:61:95' | 
 .B maclookup
-\-S > output.txt
+\-s > output.txt
 .PP
 .SH EXIT STATUS
 maclookup returns a zero exist status.

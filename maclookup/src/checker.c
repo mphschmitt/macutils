@@ -16,7 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#define MAC_LENGTH 17
 #define MAC_PREFIX_LENGTH 8
 
 #include <stdio.h>

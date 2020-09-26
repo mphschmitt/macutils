@@ -21,6 +21,8 @@
 #ifndef _CHECKER_H_
 #define _CHECKER_H_
 
+#define MAC_LENGTH 17
+
 /**
  * @brief Case insensitive comparison of two characters
  *

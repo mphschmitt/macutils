@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "checker.h"
 #include "manufacturer.h"
@@ -34,17 +35,19 @@
 
 enum arguments {
 	ARGS_U = 0X01, /* Update the database of manufacturers */
-	ARGS_V = 0X02 /* Display version */
+	ARGS_V = 0X02, /* Display version */
+	ARGS_S = 0X04 /* Read input from stdin */
 };
 
 static void usage(void)
 {
 	printf(
-		"Usage: maclookup [OPTIONS] [MAC-ADDRESS]\n"
+		"Usage: maclookup [-s] [-huv MAC-ADDRESS]\n"
 		"Display the manufacturer of a network interface\n"
 		"  -h  --help       display this help message and exit\n"
 		"  -u  --update     update the database of manufacturers\n"
-		"  -v  --version    output version information and exit\n");
+		"  -v  --version    output version information and exit\n"
+		"  -s  --stdin      read input from the stdin\n");
 }
 
 static void version(void)
@@ -66,10 +69,11 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 		{"help", no_argument, 0, 'h'},
 		{"update", no_argument, 0, 'u'},
 		{"version", no_argument, 0, 'v'},
+		{"stdin", no_argument, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
-	while ((opt = getopt_long(argc, argv, "huv", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "huvs", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'u':
 			args |= ARGS_U;
@@ -82,6 +86,9 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 			args |= ARGS_V;
 			version();
 			return -EINVAL;
+		case 's':
+			args |= ARGS_S;
+			break;
 		case 'h':
 		case '?':
 			usage();
@@ -104,13 +111,36 @@ static char check_arguments(int argc, char *argv[], char ** mac_address)
 		printf("Invalid argument: %s\n", argv[1]);
 		usage();
 		return -EINVAL;
-	} else if (optind == argc && !(args & ARGS_U)) {
+	} else if (optind == argc && !(args & ARGS_U) && !(args & ARGS_S)) {
 		printf("Missing argument: mac address\n");
 		usage();
 		return -EINVAL;
 	}
 
 	return args;
+}
+
+static int read_input(char **mac_address)
+{
+	char buffer[MAC_LENGTH];
+	ssize_t ret = 0;
+
+	ret = read(STDIN_FILENO, buffer, sizeof(buffer));
+	if (ret < 0) {
+		printf("%s\n", strerror(errno));
+		return -EINVAL;
+	} else if (ret != MAC_LENGTH) {
+		printf("Invalid input: %s\n", buffer);
+		return -EINVAL;
+	}
+
+	if (!mac_address_is_valid(buffer)) {
+		printf("invalid mac address: %s\n", buffer);
+		return -EINVAL;
+	}
+	*mac_address = strndup(buffer, strlen(buffer));
+
+	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -131,6 +161,14 @@ int main(int argc, char *argv[])
 	/* Restore the backup if exist during update */
 	/* That way we avoid to use an incomplete file */
 	signal_handler();
+
+	if (args & ARGS_S) {
+		res = read_input(&mac_address);
+		if (res < 0) {
+			usage();
+			goto end;
+		}
+	}
 
 	if (args & ARGS_U) {
 		update(OUI_PATH, OUI);

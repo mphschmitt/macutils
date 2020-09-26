@@ -7,13 +7,12 @@ maclookup \- Interroge la base de donnees oui de l'IEE
 .SH DESCRIPTION
 .B maclookup
 Lit une addresse mac passee en argument, et trouve son fabricant dans la base de donnes oui.txt.
-Il est aussi possible de realiser une recherche inversee, et de recuperer toutes les addresses mac associees a un fabricant en passant son nom en argument.
 .PP
 Le programme a ete concu pour un usage rapide en ligne de commande, plutot que d'utiliser des outils internet.
 Il est aussi possible de lire l'addresse mac (ou le nom du fabricant) depuis l'entree standard, plus adapte a l'usage dans un flux de donees (voir
 .B EXEMPLES\fR)
 en utilisant l'option
-.B -S
+.B -s
 .PP
 Le resultat d'une requet est les donnees brutes du fichier oui.txt:
 .PP
@@ -70,13 +69,13 @@ Trouve le fabricant de l'addresse mac en utilisant uniquement les trois premiers
 Lit une addresse mac sur l'entree standard et trouve son fabricant
 echo '08:61:95:02:2b:4c' | 
 .B maclookup
-\-S
+\-s
 .PP
 .TP
 Lit une addresse mac sur l'entree standard et ecrit son fabricant dans un fichier
 echo '08:61:95' | 
 .B maclookup
-\-S > output.txt
+\-s > output.txt
 .PP
 .SH EXIT STATUS
 maclookup retourne 0 en cas de succes.
