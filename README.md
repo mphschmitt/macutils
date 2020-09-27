@@ -153,4 +153,4 @@ Distributed under GPL License. See `COPYING` for more information.
 # Contact
 
 Mathias Schmitt - mathiaspeterhorst@gmail.com     
-Project link: https://github.com/mphschmitt/chktropy
+Project link: https://github.com/mphschmitt/macutils
